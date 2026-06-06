@@ -103,12 +103,17 @@ class Command(BaseCommand):
                         continue
 
                     # 3. Товар
-                    product_id = row.get('ID элемента')
+                    product_id_raw = row.get('ID элемента')
                     product_name = row.get('Наименование элемента')
-                    if not product_name or not product_id:
+                    
+                    if not product_name or pd.isna(product_id_raw):
                         continue
                     
-                    product_id = int(product_id)
+                    try:
+                        product_id = int(float(product_id_raw))
+                    except (ValueError, TypeError):
+                        continue
+                        
                     description = str(row.get('Детальное описание в формате html') or "")
                     unique_product_slug = f"{rus_slugify(str(product_name))}-{product_id}"
 
@@ -126,19 +131,31 @@ class Command(BaseCommand):
                     # 4. Вариант (SKU)
                     sku = row.get('Артикул для товара с торговыми предложениями/вариантами') or \
                           row.get('Артикул товара без торговых предложений/вариантов')
-                    if not sku:
+                    if not sku or pd.isna(sku):
                         sku = f"SKU-{product_id}-{index}"
 
                     # Цены и остатки
                     price_val = row.get('Цена "Розничная цена" для товара с торговым предложением/вариантом') or \
                                 row.get('Цена "Розничная цена"')
-                    try: price = Decimal(str(price_val))
-                    except: price = Decimal('0.00')
+                    try: 
+                        if pd.isna(price_val):
+                            price = Decimal('0.00')
+                        else:
+                            price = Decimal(str(price_val))
+                    except: 
+                        price = Decimal('0.00')
                     
                     stock_val = row.get('Доступное количество для конкретного торгового предложения/варианта товара') or \
                                 row.get('Доступное количество')
-                    try: stock = int(float(stock_val))
-                    except: stock = 0
+                    try: 
+                        if pd.isna(stock_val):
+                            stock = 0
+                        else:
+                            stock = int(float(stock_val))
+                            if stock < 0: # Защита от отрицательных остатков
+                                stock = 0
+                    except: 
+                        stock = 0
 
                     thickness = row.get('Фильтр при выборе и торговое предложение/вариант - Толщина:')
                     size = row.get('Фильтр при выборе и торговое предложение/вариант - Размер')

@@ -3,77 +3,114 @@
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, EffectFade, Pagination } from 'swiper/modules';
+
+import 'swiper/css';
+import 'swiper/css/effect-fade';
+import 'swiper/css/pagination';
+
+const BANNERS = [
+  {
+    id: 1,
+    title: "Снаряжение для",
+    subtitle: "подводной охоты",
+    description: "Откройте для себя мир глубин с профессиональным снаряжением. Лучшие ружья, костюмы и аксессуары для успешной охоты.",
+    image: "/images/main_banner_spearhunter.jpg",
+    link: "/catalog?category=podvodnaja-ohota"
+  },
+  {
+    id: 2,
+    title: "Снаряжение для",
+    subtitle: "дайвинга",
+    description: "Исследуйте подводные красоты с максимальным комфортом и безопасностью. Полный спектр оборудования для погружений.",
+    image: "/images/main_banner_diver.jpg",
+    link: "/catalog?category=dajving"
+  }
+];
 
 export default function Hero() {
   return (
-    <section className="relative h-[80vh] min-h-[600px] flex items-center overflow-hidden bg-slate-950">
-      {/* Background with overlay */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/90 to-transparent z-10" />
-        <div className="absolute inset-0 bg-blue-900/20 mix-blend-overlay z-10" />
-        <img
-          src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=2070&auto=format&fit=crop"
-          alt="Diving"
-          className="w-full h-full object-cover"
-        />
-      </div>
-
-      <div className="container mx-auto px-4 relative z-20">
-        <div className="max-w-3xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <span className="inline-block bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-4">
-              Новая коллекция 2026
-            </span>
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-              Снаряжение для <br />
-              <span className="text-blue-400">подводной охоты</span>
-            </h1>
-            <p className="text-xl text-blue-100 mb-10 max-w-xl leading-relaxed">
-              Откройте для себя мир глубин с профессиональным снаряжением. 
-              Только проверенные бренды и лучшие цены для ваших приключений.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link
-                href="#"
-                className="group flex items-center justify-center space-x-2 bg-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20"
-              >
-                <span>Перейти в каталог</span>
-                <ArrowRight className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                href="#"
-                className="flex items-center justify-center bg-white/10 backdrop-blur-md text-white border border-white/20 px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/20 transition-all"
-              >
-                Наши акции
-              </Link>
+    <section className="relative h-[90vh] min-h-[600px] overflow-hidden bg-slate-950">
+      <Swiper
+        modules={[Autoplay, EffectFade, Pagination]}
+        effect="fade"
+        speed={1000}
+        autoplay={{ delay: 6000, disableOnInteraction: false }}
+        pagination={{ clickable: true, el: '.custom-pagination' }}
+        className="h-full w-full"
+      >
+        {BANNERS.map((banner) => (
+          <SwiperSlide key={banner.id} className="relative h-full w-full">
+            <Link href={banner.link} className="absolute inset-0 z-30 cursor-pointer" aria-label={banner.subtitle} />
+            
+            {/* Background with overlay */}
+            <div className="absolute inset-0 z-0">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-900/90 via-blue-900/40 to-transparent z-10" />
+              <img
+                src={banner.image}
+                alt={banner.subtitle}
+                className="w-full h-full object-cover transition-transform duration-[10000ms] scale-100 swiper-slide-active:scale-110"
+              />
             </div>
-          </motion.div>
-        </div>
-      </div>
 
-      {/* Stats/Floating elements */}
-      <div className="absolute bottom-12 right-4 md:right-12 hidden lg:flex space-x-8">
+            <div className="container mx-auto px-4 h-full flex items-center relative z-20 pointer-events-none">
+              <div className="max-w-4xl w-full">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="flex flex-col justify-center min-h-[400px]"
+                >
+                  <h2 className="text-5xl md:text-8xl font-black text-white mb-6 leading-[0.9]">
+                    {banner.title} <br />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
+                      {banner.subtitle}
+                    </span>
+                  </h2>
+                  <p className="text-xl md:text-2xl text-blue-100 max-w-2xl leading-relaxed opacity-90">
+                    {banner.description}
+                  </p>
+                </motion.div>
+              </div>
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+
+      {/* Stats/Floating elements - Static for both slides */}
+      <div className="absolute bottom-16 right-4 md:right-12 hidden lg:flex space-x-8 z-40">
         {[
           { label: "Товаров", value: "5000+" },
           { label: "Брендов", value: "50+" },
-          { label: "Лет опыта", value: "15" },
         ].map((stat, i) => (
-          <motion.div
+          <div
             key={i}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4 + i * 0.1 }}
-            className="bg-white/10 backdrop-blur-xl border border-white/10 p-6 rounded-2xl min-w-[140px]"
+            className="bg-white/10 backdrop-blur-2xl border border-white/10 p-6 rounded-[2rem] min-w-[160px] shadow-2xl"
           >
-            <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
-            <div className="text-blue-200 text-sm">{stat.label}</div>
-          </motion.div>
+            <div className="text-4xl font-black text-white mb-1">{stat.value}</div>
+            <div className="text-blue-300 text-sm font-bold uppercase tracking-widest">{stat.label}</div>
+          </div>
         ))}
       </div>
+
+      {/* Custom Pagination Container */}
+      <div className="custom-pagination absolute bottom-10 left-0 w-full flex justify-center z-40 !gap-3" />
+
+      <style jsx global>{`
+        .custom-pagination .swiper-pagination-bullet {
+          width: 40px;
+          height: 6px;
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.3);
+          opacity: 1;
+          transition: all 0.3s;
+        }
+        .custom-pagination .swiper-pagination-bullet-active {
+          background: #2563eb;
+          width: 80px;
+        }
+      `}</style>
     </section>
   );
 }

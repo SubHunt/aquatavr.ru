@@ -47,6 +47,13 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def main_image(self):
+        main_img = self.images.filter(is_main=True).first()
+        if not main_img:
+            main_img = self.images.first()
+        return main_img.image if main_img else None
+
 class ProductVariant(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variants', verbose_name="Товар")
     sku = models.CharField(max_length=100, unique=True, verbose_name="Артикул (SKU)")

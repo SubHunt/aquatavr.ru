@@ -7,6 +7,8 @@ class CustomUserManager(BaseUserManager):
         if not email:
             raise ValueError(_('The Email field must be set'))
         email = self.normalize_email(email)
+        # New users are inactive until email is verified
+        extra_fields.setdefault('is_active', False)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)

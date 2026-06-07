@@ -2,14 +2,19 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ShoppingCart, Menu, X, Search, Phone, ChevronDown } from "lucide-react";
+import { ShoppingCart, Menu, X, Search, Phone, ChevronDown, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
+  const { user, logout } = useAuth();
+  const { cart } = useCart();
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -17,12 +22,10 @@ export default function Header() {
     };
     window.addEventListener("scroll", handleScroll);
 
-    // Загрузка категорий для меню
     fetch("http://localhost:8000/api/categories/")
       .then((res) => res.json())
       .then((data) => {
         const cats = data.results || data;
-        // Строим дерево (упрощенно: только топ-уровень и их дети)
         const roots = cats.filter((c: any) => c.parent === null);
         const tree = roots.map((root: any) => ({
           ...root,
@@ -34,6 +37,8 @@ export default function Header() {
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const cartCount = cart?.items.reduce((acc, item) => acc + item.quantity, 0) || 0;
 
   return (
     <header
@@ -65,7 +70,6 @@ export default function Header() {
               <ChevronDown size={14} className={`transition-transform duration-300 ${isCatalogOpen ? "rotate-180" : ""}`} />
             </button>
             
-            {/* Mega Menu - remains unchanged, always white background */}
             <AnimatePresence>
               {isCatalogOpen && (
                 <motion.div
@@ -128,16 +132,67 @@ export default function Header() {
           }`}>
             <Search size={20} />
           </button>
-          <button className={`flex items-center space-x-2 p-2 transition-colors duration-300 ${
-            isScrolled || isCatalogOpen || isMobileMenuOpen ? "text-gray-700 hover:text-blue-600" : "text-white hover:text-blue-300 drop-shadow-md"
-          }`}>
-            <ShoppingCart size={20} />
-            <span className={`text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold ${
-              isScrolled || isCatalogOpen || isMobileMenuOpen ? "bg-blue-600 text-white" : "bg-white text-blue-600"
-            }`}>
-              0
-            </span>
-          </button>
+          
+          <div className="relative">
+            {user ? (
+              <div 
+                className="relative"
+                onMouseEnter={() => setIsUserMenuOpen(true)}
+                onMouseLeave={() => setIsUserMenuOpen(false)}
+              >
+                <button className={`flex items-center space-x-2 p-2 transition-colors duration-300 ${
+                  isScrolled || isCatalogOpen || isMobileMenuOpen ? "text-gray-700 hover:text-blue-600" : "text-white hover:text-blue-300 drop-shadow-md"
+                }`}>
+                  <User size={20} />
+                  <span className="text-sm font-medium">{user.first_name}</span>
+                </button>
+                <AnimatePresence>
+                  {isUserMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute right-0 top-full w-48 bg-white shadow-xl rounded-xl border border-gray-100 py-2 mt-1"
+                    >
+                      <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Профиль</Link>
+                      <Link href="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Заказы</Link>
+                      <button 
+                        onClick={logout}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
+                      >
+                        Выйти
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <Link href="/login" className={`p-2 transition-colors duration-300 ${
+                isScrolled || isCatalogOpen || isMobileMenuOpen ? "text-gray-700 hover:text-blue-600" : "text-white hover:text-blue-300 drop-shadow-md"
+              }`}>
+                <User size={20} />
+              </Link>
+            )}
+          </div>
+
+          <Link 
+            href="/cart"
+            className={`flex items-center space-x-2 p-2 transition-colors duration-300 ${
+              isScrolled || isCatalogOpen || isMobileMenuOpen ? "text-gray-700 hover:text-blue-600" : "text-white hover:text-blue-300 drop-shadow-md"
+            }`}
+          >
+            <div className="relative">
+              <ShoppingCart size={20} />
+              {cartCount > 0 && (
+                <span className={`absolute -top-2 -right-2 text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-black animate-in fade-in zoom-in duration-300 ${
+                  isScrolled || isCatalogOpen || isMobileMenuOpen ? "bg-blue-600 text-white" : "bg-white text-blue-600"
+                }`}>
+                  {cartCount}
+                </span>
+              )}
+            </div>
+          </Link>
+
           <a
             href="tel:+70000000000"
             className={`flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-medium transition-all shadow-lg ${
@@ -151,7 +206,6 @@ export default function Header() {
           </a>
         </div>
 
-        {/* Mobile Menu Toggle */}
         <button
           className={`lg:hidden p-2 transition-colors duration-300 ${
             isScrolled || isCatalogOpen || isMobileMenuOpen ? "text-gray-700" : "text-white drop-shadow-md"
@@ -162,7 +216,6 @@ export default function Header() {
         </button>
       </div>
 
-      {/* Mobile Menu */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
@@ -172,7 +225,6 @@ export default function Header() {
             className="lg:hidden bg-white border-t border-gray-100 overflow-y-auto max-h-[80vh]"
           >
             <div className="container mx-auto px-4 py-6 flex flex-col space-y-6">
-              {/* Mobile Catalog Accordion */}
               <div>
                 <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Наш каталог</h4>
                 <div className="space-y-4">

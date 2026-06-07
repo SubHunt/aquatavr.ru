@@ -13,6 +13,8 @@ router.register(r'brands', BrandViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('api/auth/', include('users.urls')),
+    path('api/orders/', include('orders.urls')),
 ]
 
 if settings.DEBUG:

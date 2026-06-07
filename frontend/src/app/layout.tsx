@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
+import { AuthProvider } from "@/context/AuthContext";
+import { CartProvider } from "@/context/CartContext";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
@@ -18,8 +20,12 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body className={`${inter.className} antialiased`}>
-        <Header />
-        <main>{children}</main>
+        <AuthProvider>
+          <CartProvider>
+            <Header />
+            <main>{children}</main>
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );
